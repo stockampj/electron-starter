@@ -42,18 +42,20 @@ app.on('ready', ()=>{
 function createAddWindow(){
   addWindow = new BrowserWindow({
     width: 300,
-    height: 300,
+    height: 200,
     title: 'test Window',
     webPreferences: {
       nodeIntegration: true
     }
   });
+
   //load html into window
   addWindow.loadURL(url.format({
     pathname: path.join(__dirname, './views/addWindow/addWindow.html'),
     protocol: 'file:',
     slashes: true
   }))
+
   // Garbage Collection handle
   addWindow.on('close', ()=>{
     addWindow = null;
@@ -63,8 +65,14 @@ function createAddWindow(){
 //catch item:add
 ipcMain.on('item:add', (e, item)=>{
   mainWindow.webContents.send('item:add', item);
-  addWindow.close()  
+  addWindow.close()
 })
+
+//catch item:create
+ipcMain.on('createAddWindow', (event)=>{
+  createAddWindow();
+})
+
 
 // Create Menu Template
 const mainMenuTemplate = [
