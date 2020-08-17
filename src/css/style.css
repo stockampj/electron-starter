@@ -1,3 +1,14 @@
 body {
   background-color: rgba(240,240,240,1);
 }
+
+.picture-holder {
+  height: 300px;
+  width: auto;
+  overflow: hidden;
+}
+
+.picture-holder img {
+  height: 100%;
+  width: auto;
+}
