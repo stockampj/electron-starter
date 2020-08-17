@@ -1,6 +1,7 @@
 const electron = require('electron');
 const {ipcRenderer} = electron;
 const $ = require('jquery');
+const path = require('path');
 // const hammerjs = require('hammerjs');
 // const materialize = require('materialize-css');
 
@@ -39,3 +40,23 @@ $("#create-item-button")[0].addEventListener('click', ()=>{
 ipcRenderer.on('RogerRoger', (event, message)=>{
   console.log(message);
 })
+
+function pathFinder (file, type){
+  const fileLocation = file.path;
+  const currentLocation = window.location.pathname
+  let route = path.relative(currentLocation,fileLocation)
+  let routeURL = route.replace(/\\/g, '/').replace(/ /g, '%20');
+  return (type.toLowerCase() === 'url') ? routeURL: route;
+}
+
+document.getElementById("filepicker").addEventListener("change", function(event) {
+  let files = Object.values(event.target.files).filter(function(file){
+    return file.type.includes('image')===true;
+  });
+
+  let imagePath = pathFinder(files[0], 'url')
+  $('#picture-show').removeClass('hide')
+  $('#picture-show').html(`<img src=${imagePath} />`);
+
+
+}, false);
