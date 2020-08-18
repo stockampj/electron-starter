@@ -2,13 +2,10 @@ const electron = require('electron');
 const {ipcRenderer} = electron;
 const $ = require('jquery');
 const path = require('path');
-const fileObject = require('../../data/File_List');
-
-let fileList = fileObject.fileList;
-
-console.log(fileList)
 // const hammerjs = require('hammerjs');
-// const materialize = require('materialize-css');
+const materialize = require('materialize-css');
+
+let fileList = []
 
 const ul = $('#happy-list')[0];
 let itemIdNumber=0;
@@ -68,21 +65,50 @@ function imageSizeCheck (file){
 
 // This function listens for the user to pick a directory and then pulls all images into an array
 document.getElementById("filepicker").addEventListener("change", function(event) {
+  
+  // show picture container
   $('#picture-show').removeClass('hide')
+  
+  //grab image files
   let files = Object.values(event.target.files).filter(function(file){
     return file.type.includes('image')===true;
   });
+  
+  // add properties of imagePath and dimensions to the images
   const augmentedFiles = files.map(file=>{
-    const imagePath = pathFinder(files[0], 'url')
+    const imagePath = pathFinder(file, 'url')
     file.imagePath = imagePath;
     file.dimensions = imageSizeCheck(file)
-    return file
+    return file;
   })
-  console.log(augmentedFiles)
-  // $('#picture-show').html(`<img src=${imagePath} />`);
   
-  augmentedFiles.forEach(file=>{
-    fileList.push(file)
-  })
+  // check to see if files are duplicates before pushing them into the main file array
+  if (augmentedFiles.length>0){
+    augmentedFiles.forEach(file=>{
+      let pass = (fileList.filter(image => image.imagePath === file.imagePath).length > 0) ? false : true;
+      // console.log(`${file.name}: ${pass}`)
+      // console.log(file.imagePath)
+      if (pass){
+        fileList.push(file)
+      } else {
+        console.log('duplicate')
+      }
+    })
+    //populate carousel with images.
+    $('#picture-show').html('');
+    $('#picture-show').html(()=>{
+      let htmlString = ''
+      fileList.forEach(file=>{
+        htmlString += `<a class="carousel-item" href="#"><img src='${file.imagePath}'></a>`
+      })
+      return htmlString
+    });
+    // $('.carousel').carousel();
+    let elems = document.querySelectorAll('.carousel');
+    let instances = M.Carousel.init(elems);
+  }
+
+  // $('#picture-show').html(`<img src=${augmentedFiles[0].imagePath} />`);
+  
   console.log(fileList)
 }, false);
