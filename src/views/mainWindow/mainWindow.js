@@ -6,6 +6,7 @@ const EmblaCarousel = require('embla-carousel');
 const { setupPrevNextBtns, disablePrevNextBtns } = require("./prevAndNextButton");
 const lazyLoad = require("./lazyLoad");
 
+
 // const hammerjs = require('hammerjs');
 // const materialize = require('materialize-css');
 
@@ -58,11 +59,13 @@ function imageSizeCheck (file){
   img.src = window.URL.createObjectURL(file)
   let dimensions = {
     width: 0,
-    height: 0
+    height: 0,
+    orientation: 'not calculated'
   }
   img.onload = () => {
     dimensions.width = img.width;
     dimensions.height = img.height;
+    dimensions.orientation = (img.width>=img.height) ? 'landscape' : 'portrait';
   }
   return dimensions;
 }
@@ -88,7 +91,6 @@ document.getElementById("filepicker").addEventListener("change", function(event)
   
   // check to see if files are duplicates before pushing them into the main file array
   if (augmentedFiles.length>0){
-
     augmentedFiles.forEach(file=>{
       let pass = (fileList.filter(image => image.imagePath === file.imagePath).length > 0) ? false : true;
       if (pass){
@@ -97,11 +99,6 @@ document.getElementById("filepicker").addEventListener("change", function(event)
         console.log('duplicate')
       }
     })
-    
-    //materialize
-    // $('.carousel').carousel();
-    // let elems = document.querySelectorAll('.carousel');
-    // let instances = M.Carousel.init(elems);
 
     emblaRefresh(fileList, 'picture-show');
   }
@@ -118,17 +115,7 @@ function emblaRefresh(fileArray, targetId){
       const carouselHtml = `
       <div class="embla" id="embla">
         <div class="embla__viewport">
-          <div class="embla__container carousel-root">
-            <div class="embla__slide">
-              <div class=embla__slide__inner>
-                <img 
-                  class="embla__slide__img"
-                  src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D" 
-                  data-src=""
-                />
-              </div>
-            </div>
-          </div>
+          <div class="embla__container carousel-root"></div>
         </div>
         <button class="embla__button embla__button--prev" type="button">
           <svg
@@ -187,7 +174,6 @@ function emblaRefresh(fileArray, targetId){
     const disablePrevAndNextBtns = disablePrevNextBtns(prevBtn, nextBtn, embla);
     setupPrevNextBtns(prevBtn, nextBtn, embla);
 
-    console.log(lazyLoad)
     const loadImagesInView = lazyLoad(embla);
     const loadImagesInViewAndDestroyIfDone = eventName => {
       const loadedAll = loadImagesInView();
@@ -200,5 +186,5 @@ function emblaRefresh(fileArray, targetId){
     embla.on("init", loadImagesInViewAndDestroyIfDone);
     embla.on("select", loadImagesInViewAndDestroyIfDone);
     embla.on("resize", loadImagesInViewAndDestroyIfDone);
-
 }
+
