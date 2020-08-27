@@ -1,13 +1,12 @@
 const electron = require('electron')
 const url = require('url');
 const path = require('path');
-
-
-// import electron from 'electron';
-// import url from 'url';
-// import path from 'path';
-
 const {app, BrowserWindow, Menu, ipcMain} = electron;
+const DataStore = require('./data/DataStore');
+
+//create data store
+const sessionData = new DataStore({name: 'session_data'});
+const userData = new DataStore({name: 'user_data'});
 
 let mainWindow;
 let addWindow;
@@ -50,7 +49,7 @@ function createAddWindow(){
     }
   });
 
-  //load html into window
+  //load html into addWindow
   addWindow.loadURL(url.format({
     pathname: path.join(__dirname, './views/addWindow/addWindow.html'),
     protocol: 'file:',
@@ -72,6 +71,33 @@ ipcMain.on('item:add', (e, item)=>{
 //catch item:create
 ipcMain.on('createAddWindow', (event)=>{
   createAddWindow();
+})
+
+//add item to items list in store
+ipcMain.on('add-item', (event, item)=> {
+  const updatedItems = sessionData.addItem(JSON.parse(item));
+  mainWindow.webContents.send('items-list', updatedItems)
+})
+
+ipcMain.on('add-items', (event, items)=> {
+  itemsList = JSON.parse(items)
+  itemsList.forEach(item=>{
+    sessionData.addItem(item);
+  })
+  let updatedItems = JSON.stringify(sessionData.getItems());
+  mainWindow.webContents.send('items-list', updatedItems);
+})
+
+//delete item from items list in store
+ipcMain.on('delete-item', (event, id)=>{
+  const updatedItems = JSON.stringify(sessionData.deleteItem(id))
+  mainWindow.webContents.send('items-list', updatedItems)
+})
+
+ipcMain.on('get-items', (event)=>{
+  let updatedItems = JSON.stringify(sessionData.getItems());
+  console.log(updatedItems)
+  mainWindow.webContents.send('items-list', updatedItems)
 })
 
 

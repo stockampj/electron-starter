@@ -2,15 +2,46 @@ const electron = require('electron');
 const {ipcRenderer} = electron;
 const path = require('path');
 const $ = require('jquery');
+// const hammerjs = require('hammerjs');
+// require('materialize-css');
+
+//Embla imports
 const EmblaCarousel = require('embla-carousel');
 const { setupPrevNextBtns, disablePrevNextBtns } = require("./prevAndNextButton");
 const lazyLoad = require("./lazyLoad");
 
 
-// const hammerjs = require('hammerjs');
-// const materialize = require('materialize-css');
-
 let fileList = []
+
+// receive file-List message from main processsor store
+ipcRenderer.on('items-list', (event, updatedItems)=>{
+  itemsList = JSON.parse(updatedItems);
+  console.log(itemsList)
+})
+
+//send message and item to be added to store by main processor
+const addItem = (item) => {
+  stringItem = JSON.stringify(item);
+  ipcRenderer.send('add-item', StringItem)
+};
+
+//send message and items list to be added to store by main processor
+const addItems = (items) => {
+  stringItems = JSON.stringify(items);
+  ipcRenderer.send('add-items', stringItems)
+};
+
+//send id of item to be deleted from store by main processor
+const deleteItem = (id) => {
+  ipcRenderer.send('delete-item', id)
+}
+
+const getItems = () =>{
+  ipcRenderer.send('get-items');
+}
+
+
+getItems();
 
 const ul = $('#happy-list')[0];
 let itemIdNumber=0;
@@ -70,7 +101,6 @@ function imageSizeCheck (file){
   return dimensions;
 }
 
-
 document.getElementById("filepicker").addEventListener("change", function(event) {
   
   // show picture container
@@ -84,15 +114,22 @@ document.getElementById("filepicker").addEventListener("change", function(event)
   // add properties of imagePath and dimensions to the images
   const augmentedFiles = files.map(file=>{
     const imagePath = pathFinder(file, 'url')
-    file.imagePath = imagePath;
-    file.dimensions = imageSizeCheck(file)
-    return file;
+    // file.dimensions = imageSizeCheck(file)
+    fileObject = {
+      imagePath: imagePath,
+      lastModified: file.lastModified,
+      name: file.name,
+      path: file.path,
+      size: file.size,
+      type: file.type
+    }
+    return fileObject;
   })
   
   // check to see if files are duplicates before pushing them into the main file array
   if (augmentedFiles.length>0){
     augmentedFiles.forEach(file=>{
-      let pass = (fileList.filter(image => image.imagePath === file.imagePath).length > 0) ? false : true;
+      const pass = (fileList.filter(image => image.imagePath === file.imagePath).length > 0) ? false : true;
       if (pass){
         fileList.push(file)
       } else {
@@ -102,8 +139,8 @@ document.getElementById("filepicker").addEventListener("change", function(event)
 
     emblaRefresh(fileList, 'picture-show');
   }
-  
-  console.log(fileList)
+  // console.log(fileList)
+  addItems(fileList);
 }, false);
 
 //This function will target a particular class, destroy any inner html, populate it with embla slides for each file in an array and then initialize embla functions
@@ -150,6 +187,7 @@ function emblaRefresh(fileArray, targetId){
                   class="embla__slide__img"
                   src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D" 
                   data-src="${file.imagePath}"
+                  id="${file.imagePath}"
                 />
               </div>
             </div>
@@ -158,7 +196,11 @@ function emblaRefresh(fileArray, targetId){
       })
       return htmlString
     });
-    
+
+    $('.embla__slide__img').on('click', (event)=>{
+      console.log(event.target.id)
+    })
+
     //initialize EmblaCarousel
     // const emblaNode = document.getElementById('embla')
     // console.log(emblaNode)
