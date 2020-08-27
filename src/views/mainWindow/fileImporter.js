@@ -3,7 +3,7 @@ const {ipcRenderer} = electron;
 const path = require('path');
 const $ = require('jquery');
 
-function importFiles(event, fileArray){
+function importFiles(newFiles, masterFiles){
   
   //send message and items list to be added to store by main processor
   const addItems = (items) => {
@@ -42,7 +42,7 @@ function importFiles(event, fileArray){
   }
 
   //grab image files
-  let files = Object.values(event.target.files).filter(function(file){
+  let files = newFiles.filter(function(file){
     return file.type.includes('image')===true;
   });
   
@@ -64,7 +64,7 @@ function importFiles(event, fileArray){
   // check to see if files are duplicates before pushing them into the main file array
   if (augmentedFiles.length>0){
     const passingFiles = augmentedFiles.filter(file=>{
-      const pass = (fileArray.filter(image => image.imagePath === file.imagePath).length > 0) ? false : true;
+      const pass = (masterFiles.filter(image => image.imagePath === file.imagePath).length > 0) ? false : true;
       return pass
     })
     addItems(passingFiles);
