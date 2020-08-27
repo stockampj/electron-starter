@@ -9,7 +9,7 @@ class DataStore extends Store {
   
   getItems() {
     this.itemList = this.get('itemList') || [];
-    return this;
+    return this.itemList;
   }
 
   addItem(item){

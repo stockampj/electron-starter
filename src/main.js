@@ -96,7 +96,6 @@ ipcMain.on('delete-item', (event, id)=>{
 
 ipcMain.on('get-items', (event)=>{
   let updatedItems = JSON.stringify(sessionData.getItems());
-  console.log(updatedItems)
   mainWindow.webContents.send('items-list', updatedItems)
 })
 
